@@ -1,5 +1,5 @@
 ---
-title: "Homework [2]: [Multi-variable Visualization]"
+title: "Homework 2: Multi-variable Visualization"
 subtitle: Data Analytics and Visualization, Fall 2024
 author: Otis Golden and Simone Johnson
 institute: Harvey Mudd College
@@ -22,7 +22,7 @@ LetsPlot.setup_html()
 
 df = pd.read_csv("US-National-Parks_Use_1979-2023_By-Month.csv")
 
-df.head()
+# df.head()
 ```
 
 ## Visualization 1: Recreational visits in different regions over time
@@ -31,7 +31,7 @@ The first analysis that we decided to do was to see how the number of visits to 
 
 ```{python}
 groupYear = df[['Region', 'Year', 'RecreationVisits']].groupby(['Region', 'Year']).sum().reset_index()
-groupYear.head()
+# groupYear.head()
 ```
 
 ```{python}
