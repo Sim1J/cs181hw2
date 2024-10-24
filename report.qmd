@@ -1,0 +1,46 @@
+---
+title: "Homework [2]: [Multi-variable Visualization]"
+subtitle: Data Analytics and Visualization, Fall 2024
+author: Otis Golden and Simone Johnson
+institute: Harvey Mudd College
+date: October 2024
+format: 
+  html:
+    self-contained: true
+    code-fold: true
+---
+
+# Dataset overview - U.S. National Park Visit Data
+
+The dataset that we are using for this assignment comes from the site "Responsible Data in Context", and gives information about how the data is collected and why. What we learned from this is that this information is collected nationwide at all of the national parks by the National Park Service. This information is important for them to collect so that they can adequately provide resources to the park staff, as well as to let communities know if they are anticipated a higher flow of visitors than usual. For this reason, finding trends in this data is important to them because it allows them to keep the parks and surrounding communities safe and clean. Resource allocation is especially crucial in national parks because of the risk for hikers to need emergency health services inside a national park.
+
+```{python}
+from lets_plot import *
+import numpy as np
+import pandas as pd
+LetsPlot.setup_html()
+
+df = pd.read_csv("US-National-Parks_Use_1979-2023_By-Month.csv")
+
+df.head()
+```
+
+## Visualization 1: Recreational visits in different regions over time
+
+The first analysis that we decided to do was to see how the number of visits to the national parks changed over time. Additionally, we decided to separate this analysis by the region that the park is in -- the regions were defined in the dataset as Alaska, Intermountain, Midwest, Northeast, Pacific West, and Southeast. Splitting this analysis by region allows us to not only compare which region's national parks get the most recreational visitors, but also will let us see if a certain region of the country had a large increase or decrease in visitors relative to the others, which would indicate that the resource allocation there should be changed accordingly.
+
+```{python}
+groupYear = df[['Region', 'Year', 'RecreationVisits']].groupby(['Region', 'Year']).sum().reset_index()
+groupYear.head()
+```
+
+```{python}
+
+ggplot() + geom_point(data = groupYear, mapping=aes(x='Year', y='RecreationVisits', fill="Region"), alpha=0.7, color="black", shape=21) + scale_fill_brewer(palette="Set2") + ggtitle("Recreational National Park Visits")
+
+```
+
+From this visualization, we can see a few interesting things. First, we can see that the national parks in the Intermountain region tend to have the greatest amount of visitors and that the Alaskan parks have less. However, this visualization doesn't tell us how many parks are in each region, so we can't draw too many conclusions from this. Additionally, we can see that there is an overall increase in the number of visitors to the parks in most of the regions from 1980-2020. This is important to note because it means that the funding that is going into the national parks should also be increasing in order to maintain the parks. Finally, and most interestingly, we can see the drop in park visits in 2020 and how Covid-19 affected the national park visit numbers. In all regions, we can see a drop in 2020 and then a recovery in 2021.
+## Visualization 1:
+
+# Conclusions
