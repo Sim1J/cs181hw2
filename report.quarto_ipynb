@@ -1,0 +1,223 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "---\n",
+        "title: \"Homework 2: Multi-variable Visualization\"\n",
+        "subtitle: Data Analytics and Visualization, Fall 2024\n",
+        "author: Otis Golden and Simone Johnson\n",
+        "institute: Harvey Mudd College\n",
+        "date: October 2024\n",
+        "format: \n",
+        "  html:\n",
+        "    self-contained: true\n",
+        "    code-fold: true\n",
+        "---\n",
+        "\n",
+        "\n",
+        "# Dataset overview - U.S. National Park Visit Data\n",
+        "\n",
+        "The dataset that we are using for this assignment comes from the site \"Responsible Data in Context\" (https://www.responsible-datasets-in-context.com/posts/np-data/?tab=data-essay#why-was-the-data-collected-how-is-the-data-used), and gives information about how the data is collected and why. What we learned from this is that this information is collected nationwide at all of the national parks by the National Park Service. This information is important for them to collect so that they can adequately provide resources to the park staff, as well as to let communities know if they are anticipated a higher flow of visitors than usual. For this reason, finding trends in this data is important to them because it allows them to keep the parks and surrounding communities safe and clean. Resource allocation is especially crucial in national parks because of the risk for hikers to need emergency health services inside a national park.\n"
+      ],
+      "id": "ad4bb299"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "from lets_plot import *\n",
+        "import numpy as np\n",
+        "import pandas as pd\n",
+        "LetsPlot.setup_html()\n",
+        "\n",
+        "df = pd.read_csv(\"US-National-Parks_Use_1979-2023_By-Month.csv\")\n",
+        "\n",
+        "# df.head()"
+      ],
+      "id": "bacbef7a",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Visualization 1: Recreational visits in different regions over time\n",
+        "\n",
+        "The first analysis that we decided to do was to see how the number of visits to the national parks changed over time. Additionally, we decided to separate this analysis by the region that the park is in -- the regions were defined in the dataset as Alaska, Intermountain, Midwest, Northeast, Pacific West, and Southeast. Splitting this analysis by region allows us to not only compare which region's national parks get the most recreational visitors, but also will let us see if a certain region of the country had a large increase or decrease in visitors relative to the others, which would indicate that the resource allocation there should be changed accordingly.\n"
+      ],
+      "id": "7f2dd015"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "groupYear = df[['Region', 'Year', 'RecreationVisits']].groupby(['Region', 'Year']).sum().reset_index()\n",
+        "# groupYear.head()"
+      ],
+      "id": "4186565f",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ggplot() + geom_point(data = groupYear, mapping=aes(x='Year', y='RecreationVisits', fill=\"Region\"), alpha=0.7, color=\"black\", shape=21) + scale_fill_brewer(palette=\"Set2\") + ggtitle(\"Recreational National Park Visits\")"
+      ],
+      "id": "17898375",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "From this visualization, we can see a few interesting things. First, we can see that the national parks in the Intermountain region tend to have the greatest amount of visitors and that the Alaskan parks have less. However, this visualization doesn't tell us how many parks are in each region, so we can't draw too many conclusions from this. Additionally, we can see that there is an overall increase in the number of visitors to the parks in most of the regions from 1980-2020. This is important to note because it means that the funding that is going into the national parks should also be increasing in order to maintain the parks. Finally, and most interestingly, we can see the drop in park visits in 2020 and how Covid-19 affected the national park visit numbers. In all regions, we can see a drop in 2020 and then a recovery in 2021.\n",
+        "## Visualization 1:\n",
+        "\n",
+        "# Conclusions\n",
+        "\n",
+        "## Tent Campers and RV Campers vs Park:\n",
+        "\n",
+        "We also chose to look at how the amount of tent campers and rv campers differs by the park that they are situated at. It may be important to collect this information, in order to provide better conditions for those certain camping methods, like more lots for rvs or rentable tents.\n"
+      ],
+      "id": "fff4f88e"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "camperRegion = df[['TentCampers','RVCampers',\"UnitCode\"]].groupby(\"UnitCode\").sum().reset_index()"
+      ],
+      "id": "24fc22c2",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "camperRegion.head()"
+      ],
+      "id": "e5b8ba71",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "camperRegion = camperRegion.melt(id_vars=['UnitCode'], value_vars=['TentCampers','RVCampers'],var_name = \"campType\",value_name='count')"
+      ],
+      "id": "73251026",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "In order to isolate the different types of campers, I decided to turn them into their own variable and their own column.\n"
+      ],
+      "id": "22442568"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "camperRegion.head()"
+      ],
+      "id": "f0d51ecd",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ggplot() + geom_bar(aes( x = 'UnitCode', y = 'count', fill = \"campType\"), stat = 'identity', data = camperRegion)\\\n",
+        "      + facet_grid(x='campType')+ ggsize(5000, 2000)"
+      ],
+      "id": "a393285c",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "This first visualization definitely shows a noticable different in the amount of campers that decide to use the tent over rv campers. This holds true for pretty much every national park. We see that this is especially true for yosemite. However, there are places like death valley national park with a greater number of rv campers than tent campers. This is interesting because I initially assumed that the difference in camper types would have been much more drastic depending on the location, but the assumption most likely is that poeple only choose to camp in whether where they could camp in a tent. \n",
+        "\n",
+        "## Using Location Data to get a more accurate look\n",
+        "\n",
+        "I used a data set from https://irma.nps.gov/NPSpecies in order to get the locations of all the national parks. With this i could also plot the location of the park along with the amount and type of people who count there.\n"
+      ],
+      "id": "9eab28e8"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "location_df = pd.read_csv(\"parks.csv\")"
+      ],
+      "id": "4504982f",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "location_df = location_df[[\"Park Code\", \"Latitude\", \"Longitude\"]]\n",
+        "location_df.rename(columns = {\"Park Code\":\"UnitCode\"}, inplace = True)\n",
+        "location_df.head()"
+      ],
+      "id": "a6edac2f",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "Area_location_df = pd.merge(camperRegion,location_df, on = \"UnitCode\")\n",
+        "Area_location_df.head()"
+      ],
+      "id": "fba95f64",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ggplot(data= Area_location_df.query('(count != 0)')) + geom_point(mapping=aes(x='Longitude', y='Latitude', color = \"campType\",size = 'count'))\\\n",
+        " + geom_text(aes(label= \"UnitCode\" ), color = '#2b8cbe',size = 10, alpha = 0) + facet_grid(x = 'campType') + ggsize(2000, 1500)"
+      ],
+      "id": "2f120468",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "From this visualization we can more effectively see the difference in the parks. We can see the size of the yosemite dot and the size of the death valey dot, and compare them across the two facets. Its also interesting to see that even at the higher latitutde where you would expect colder temperatures and therefore more rvs, there isnt that much of a difference in our observations. Overall it seems that tent camping is the more popular style of campin in most parks where the weather or conditions aren't potentialy harmful i.e. death valley.\n"
+      ],
+      "id": "c4e52dcf"
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "name": "python3",
+      "language": "python",
+      "display_name": "Python 3 (ipykernel)",
+      "path": "C:\\Users\\OGgol\\AppData\\Roaming\\Python\\share\\jupyter\\kernels\\python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}

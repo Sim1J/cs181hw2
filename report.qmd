@@ -44,3 +44,60 @@ From this visualization, we can see a few interesting things. First, we can see 
 ## Visualization 1:
 
 # Conclusions
+
+## Tent Campers and RV Campers vs Park:
+
+We also chose to look at how the amount of tent campers and rv campers differs by the park that they are situated at. It may be important to collect this information, in order to provide better conditions for those certain camping methods, like more lots for rvs or rentable tents.
+
+
+```{python}
+camperRegion = df[['TentCampers','RVCampers',"UnitCode"]].groupby("UnitCode").sum().reset_index()
+```
+
+```{python}
+camperRegion.head()
+```
+
+```{python}
+camperRegion = camperRegion.melt(id_vars=['UnitCode'], value_vars=['TentCampers','RVCampers'],var_name = "campType",value_name='count')
+```
+
+In order to isolate the different types of campers, I decided to turn them into their own variable and their own column.
+
+```{python}
+camperRegion.head()
+```
+
+```{python}
+ggplot() + geom_bar(aes( x = 'UnitCode', y = 'count', fill = "campType"), stat = 'identity', data = camperRegion)\
+      + facet_grid(x='campType')+ ggsize(5000, 2000)
+```
+
+This first visualization definitely shows a noticable different in the amount of campers that decide to use the tent over rv campers. This holds true for pretty much every national park. We see that this is especially true for yosemite. However, there are places like death valley national park with a greater number of rv campers than tent campers. This is interesting because I initially assumed that the difference in camper types would have been much more drastic depending on the location, but the assumption most likely is that poeple only choose to camp in whether where they could camp in a tent. 
+
+## Using Location Data to get a more accurate look
+
+I used a data set from https://irma.nps.gov/NPSpecies in order to get the locations of all the national parks. With this i could also plot the location of the park along with the amount and type of people who count there.
+
+```{python}
+location_df = pd.read_csv("parks.csv")
+```
+
+```{python}
+location_df = location_df[["Park Code", "Latitude", "Longitude"]]
+location_df.rename(columns = {"Park Code":"UnitCode"}, inplace = True)
+location_df.head()
+```
+
+```{python}
+Area_location_df = pd.merge(camperRegion,location_df, on = "UnitCode")
+Area_location_df.head()
+```
+
+```{python}
+ggplot(data= Area_location_df.query('(count != 0)')) + geom_point(mapping=aes(x='Longitude', y='Latitude', color = "campType",size = 'count'))\
+ + geom_text(aes(label= "UnitCode" ), color = '#2b8cbe',size = 10, alpha = 0) + facet_grid(x = 'campType') + ggsize(2000, 1500)
+```
+
+From this visualization we can more effectively see the difference in the parks. We can see the size of the yosemite dot and the size of the death valey dot, and compare them across the two facets. Its also interesting to see that even at the higher latitutde where you would expect colder temperatures and therefore more rvs, there isnt that much of a difference in our observations. Overall it seems that tent camping is the more popular style of campin in most parks where the weather or conditions aren't potentialy harmful i.e. death valley.
+
