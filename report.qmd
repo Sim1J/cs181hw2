@@ -3,7 +3,7 @@ title: "Homework 2: Multi-variable Visualization"
 subtitle: Data Analytics and Visualization, Fall 2024
 author: Otis Golden and Simone Johnson
 institute: Harvey Mudd College
-date: October 2024
+date: October 29th 2024
 format: 
   html:
     self-contained: true
@@ -29,6 +29,8 @@ df = pd.read_csv("US-National-Parks_Use_1979-2023_By-Month.csv")
 
 The first analysis that we decided to do was to see how the number of visits to the national parks changed over time. Additionally, we decided to separate this analysis by the region that the park is in -- the regions were defined in the dataset as Alaska, Intermountain, Midwest, Northeast, Pacific West, and Southeast. Splitting this analysis by region allows us to not only compare which region's national parks get the most recreational visitors, but also will let us see if a certain region of the country had a large increase or decrease in visitors relative to the others, which would indicate that the resource allocation there should be changed accordingly.
 
+To do this, we had to group the data by region and year (as the original data was separated by month and by state park). Grouping by year allowed us to see the overall trend better than by month because it reduced the variation from point to point. Grouping by region allowed us to answer questions above about the visitors to each region and how this changes over time.
+
 ```{python}
 groupYear = df[['Region', 'Year', 'RecreationVisits']].groupby(['Region', 'Year']).sum().reset_index()
 # groupYear.head()
@@ -40,10 +42,9 @@ ggplot() + geom_point(data = groupYear, mapping=aes(x='Year', y='RecreationVisit
 
 ```
 
-From this visualization, we can see a few interesting things. First, we can see that the national parks in the Intermountain region tend to have the greatest amount of visitors and that the Alaskan parks have less. However, this visualization doesn't tell us how many parks are in each region, so we can't draw too many conclusions from this. Additionally, we can see that there is an overall increase in the number of visitors to the parks in most of the regions from 1980-2020. This is important to note because it means that the funding that is going into the national parks should also be increasing in order to maintain the parks. Finally, and most interestingly, we can see the drop in park visits in 2020 and how Covid-19 affected the national park visit numbers. In all regions, we can see a drop in 2020 and then a recovery in 2021.
-## Visualization 1:
+This visualization uses a point geometry to show the trend of the number of park visitors with some opacity to show where the data points may overlap to prevent misconceptions due to overplotting. Additionally, the color palette of this plot is one of the color-blind friendly sets and we learned that hue is an effective method to display categorical variables, especially since we are displaying three variables on this graph: the year, visitor numbers, and the region. Placing the year on the x-axis makes sense because time is usually thought of as the independent variable.
 
-# Conclusions
+From this visualization, we can see a few interesting things. First, we can see that the national parks in the Intermountain region tend to have the greatest amount of visitors and that the Alaskan parks have less. However, this visualization doesn't tell us how many parks are in each region, so we can't draw too many conclusions from this. Additionally, we can see that there is an overall increase in the number of visitors to the parks in most of the regions from 1980-2020. This is important to note because it means that the funding that is going into the national parks should also be increasing in order to maintain the parks. Finally, and most interestingly, we can see the drop in park visits in 2020 and how Covid-19 affected the national park visit numbers. In all regions, we can see a drop in 2020 and then a recovery in 2021.
 
 ## Tent Campers and RV Campers vs Park:
 
