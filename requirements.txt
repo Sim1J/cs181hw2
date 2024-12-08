@@ -6,3 +6,4 @@ vega-datasets
 scikit-learn
 scipy
 jupyter
+geopandas

@@ -1,0 +1,253 @@
+---
+title: "Homework 2: Multi-variable Visualization"
+subtitle: Data Analytics and Visualization, Fall 2024
+author: Otis Golden and Simone Johnson
+institute: Harvey Mudd College
+date: October 29th 2024
+format: 
+  html:
+    self-contained: true
+    code-fold: true
+---
+
+```{python}
+
+from lets_plot import *
+import geopandas as gpd
+from lets_plot.geo_data import *
+import numpy as np
+import pandas as pd
+
+LetsPlot.setup_html()
+
+```
+
+
+```{python}
+
+data = pd.read_csv("38795-0001-Data.tsv", sep='\t')
+
+# data.describe()
+
+```
+
+```{python}
+
+demodata = data[data["AREO"]==1]
+# print(demodata.describe())
+# print(demodata.head())
+# print(demodata["STATE"].describe())
+
+```
+
+
+```{python}
+
+demodataWeed = demodata[(demodata["OFFENSE"] == 182) | (demodata["OFFENSE"] == 187)]
+
+states = geocode_states().scope('US-48').get_boundaries()
+
+```
+
+
+```{python}
+demodataWeed.head()
+count_offerse_state = demodataWeed.groupby("STNAME", as_index=False)["OFFENSE"].count()
+
+state_pop = pd.read_csv("popstate.csv")
+
+state_pop["STNAME"] = [x[:6] for x in state_pop['Description']]
+
+state_pop2019 = state_pop[state_pop["Year"] == 2019]
+
+percent_offence_state = pd.merge(state_pop2019, count_offerse_state)
+
+percent_offence_state["percent"] = percent_offence_state["OFFENSE"] / percent_offence_state["Total Population"] * 100000
+
+# print(percent_offence_state)
+
+mean_us = percent_offence_state["percent"].mean()
+
+map_fill_colors = scale_fill_gradient2(name="", low="#8e0152",mid="#f7f7f7",high="#276419", midpoint=mean_us,
+                                       format=".2s",
+                                       guide=guide_colorbar(barheight=10, barwidth=300))
+
+map_settings = (theme(axis="blank", panel_grid='blank',
+                      legend_direction='horizontal', legend_position="bottom") + 
+                map_fill_colors + 
+                coord_map() +
+                ggsize(700, 400))
+
+# (ggplot(percent_offence_state) + 
+#  geom_polygon(aes(fill="percent"), stat="identity",map=states, map_join="Description", color="white") + 
+#  map_settings)
+
+# ggplot() + geom_bar(data=count_offerse_state, mapping=aes(x="state", y="OFFENSE"), stat = "identity")
+
+
+
+```
+
+
+```{python}
+
+
+# states["found name"] = states["found name"].astype(str)
+
+# # states["STNAME"] = states["found name"][:6]
+
+# states["state"] = [x[:6] for x in states['found name']]
+
+# print(states.head())
+
+# print(count_offerse_state.head())
+
+# # us_states_weed = pd.merge(states, count_offerse_state, on="STNAME", how="left")
+
+# (ggplot(count_offerse_state) + 
+#  geom_polygon(aes(fill="OFFENSE"), stat="identity",map=states, map_join="STNAME", color="white") + 
+#  map_settings)
+
+
+# # print(us_states_weed.head())
+
+# ggplot(data = us_states_weed) + geom_polygon(mapping = aes(x = long, y = lat, fill = "OFFENSE"), color = "gray90", size = 0.1) + coord_map(projection = "albers", lat0 = 39, lat1 = 45)
+
+```
+
+
+
+```{python}
+
+# subsetd1 = demodataWeed[demodataWeed["AA"] == 1]
+
+# print(subsetd1)
+
+# d1 = subsetd1.groupby(["STNAME", "STATE"], as_index=True)["OFFENSE"].count()
+# print(d1)
+
+count_demographics_state = demodataWeed.groupby("STNAME", as_index=False)["OFFENSE"].count()
+
+p1 = count_demographics_state
+
+for x in ["AA", "AB", "AW", "AI", "JA", "JB", "JW", "JI"]:
+  subset = demodataWeed[demodataWeed[x] < 20]
+  p2 = subset.groupby("STNAME", as_index=False)[x].sum()
+  p1 = pd.merge(p1, p2, on="STNAME", how="left")
+
+# print(p1)
+
+
+```
+
+
+```{python}
+
+observDataCountsWeed = pd.merge(p1, state_pop2019, on="STNAME", how="left")
+
+observDataCountsWeed["state"] = observDataCountsWeed["STNAME"]
+
+# observDataWeed = pd.merge(observDataWeed, states, on = "state", how= "left")
+
+# print(observDataCountsWeed)
+
+observDataCountsWeed.to_csv("observDataCountsWeed.csv")
+
+```
+
+
+```{ojs}
+
+viewof demographic = Inputs.select(
+  new Map([
+    ["Adult Asian", "AA"],
+    ["Adult Black", "AB"],
+    ["Adult White", "AW"],
+    ["Adult Indian", "AI"]
+  ]),
+  { label: "Demographic" }
+)
+
+```
+
+```{ojs}
+
+addTooltips( // Add tooltips
+  Plot.plot({
+    projection: "albers-usa",
+    width: width/2,
+    marks: [
+      Plot.geo(states, {
+        fill: (d) => DemographicCountMap.get(d.properties.name),
+        title: (d) =>
+          `${d.properties.name} \n ${
+            DemographicCountMap.get(d.properties.name) // Custom tooltip text
+          }`
+      })
+    ],
+    color: {
+      scheme: "Blues",
+      unknown: "#ddd",
+      type: "linear",
+      label: "Arrests per 100,000 individuals", // Update legend label
+      legend: true,
+      percent: false, // Convert value to a percent (from a proportion)
+      domain: [0, 1000] // Update the value domain to span 0 to 100% access
+    }
+  })
+)
+
+```
+
+
+```{ojs}
+simpleMap = new Map([
+    ["AA", "Asian Alone"],
+    ["AB", "Black Alone"],
+    ["AW", "White Alone"],
+    ["AI", "American Indian or Alaskan Native"]
+  ])
+```
+
+
+```{ojs}
+
+DemographicCountMap = new Map(demographicCounts.map(({Description, ...rest}) => [Description, rest[demographic]/rest[simpleMap.get(demographic)]*100000]))
+
+```
+
+```{ojs}
+
+demographicCounts = FileAttachment("observDataCountsWeed.csv").csv()
+
+```
+
+```{ojs}
+
+import {addTooltips} from "@mkfreeman/plot-tooltip"
+import {us} from "@observablehq/us-geographic-data"
+states = topojson.feature(us, us.objects.states)
+
+```
+
+
+```{python}
+
+# print(demodataWeed)
+
+# print(states)
+
+# print(state_pop)
+
+# observDataWeed = pd.merge(demodataWeed, state_pop, on="STNAME", how="left")
+
+# observDataWeed["state"] = observDataWeed["STNAME"]
+
+# # observDataWeed = pd.merge(observDataWeed, states, on = "state", how= "left")
+
+# print(observDataWeed)
+
+# observDataWeed.to_csv("observableData.csv")
+
+
+```
